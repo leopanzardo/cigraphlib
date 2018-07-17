@@ -1,6 +1,13 @@
 <?php
 /*
 
+CIGraphLib
+
+This library is based on PHPGraphLib but it was modified and extended by Leonardo Panzardo to be able to use it as a CodeIgniter Library and allow more customization options, like adding the posibility of using true type fonts for every text showed on the charts.
+Visit http://www.cigraphlib.tk/ for more information.
+
+---
+
 PHPGraphLib Graphing Library
 
 The first version PHPGraphLib was written in 2007 by Elliott Brueggeman to
@@ -35,7 +42,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
 */
-class PHPGraphLibPie extends PHPGraphLib 
+class Cigraphlibpie extends Cigraphlib 
 {
 	const PIE_3D_HEIGHT_PERCENT = 4;
 	const PIE_LEGEND_TEXT_WIDTH = 6;
