@@ -2,6 +2,13 @@
 
 /*
 
+CIGraphLib
+
+This library is based on PHPGraphLib but it was modified and extended by Leonardo Panzardo to be able to use it as a CodeIgniter Library and allow more customization options, like adding the posibility of using true type fonts for every text showed on the charts.
+Visit http://www.cigraphlib.tk/ for more information.
+
+---
+
 PHPGraphLib Graphing Library
 
 The first version PHPGraphLib was written in 2007 by Elliott Brueggeman to
@@ -37,17 +44,17 @@ THE SOFTWARE.
 
 */
 
-class PHPGraphLib {
+class Cigraphlib {
 
 	//set to actual font heights and widths used
-	const TITLE_CHAR_WIDTH = 6;
-	const TITLE_CHAR_HEIGHT = 12;
-	const TEXT_WIDTH = 6;
-	const TEXT_HEIGHT = 12;
-	const LEGEND_TEXT_WIDTH = 6;
-	const LEGEND_TEXT_HEIGHT = 12;
-	const DATA_VALUE_TEXT_WIDTH = 6;
-	const DATA_VALUE_TEXT_HEIGHT = 12;
+	const TITLE_CHAR_WIDTH = 8;
+	const TITLE_CHAR_HEIGHT = 16;
+	const TEXT_WIDTH = 8;
+	const TEXT_HEIGHT = 16;
+	const LEGEND_TEXT_WIDTH = 8;
+	const LEGEND_TEXT_HEIGHT = 16;
+	const DATA_VALUE_TEXT_WIDTH = 8;
+	const DATA_VALUE_TEXT_HEIGHT = 16;
 
 	//padding between axis and value displayed
 	const AXIS_VALUE_PADDING = 5;
@@ -56,8 +63,9 @@ class PHPGraphLib {
 	const DATA_VALUE_PADDING = 5;
 
 	//default margin % of width / height
-	const X_AXIS_MARGIN_PERCENT = 12;
-	const Y_AXIS_MARGIN_PERCENT = 8;
+	const TOP_MARGIN_PERCENT = 10;
+	const X_AXIS_MARGIN_PERCENT = 20;
+	const Y_AXIS_MARGIN_PERCENT = 7;
 
 	//controls auto-adjusting grid interval
 	const RANGE_DIVISOR_FACTOR = 25;
@@ -92,7 +100,7 @@ class PHPGraphLib {
 	protected $bool_title_left = false;
 	protected $bool_title_right = false;
 	protected $bool_title_center = true;
-	protected $bool_background = false;
+	protected $bool_background = true;
 	protected $bool_title = false;
 	protected $bool_ignore_data_fit_errors = false;
 	protected $data_point_width = 6;
@@ -115,7 +123,7 @@ class PHPGraphLib {
 	protected $bool_x_axis_setup = false;
 
 	//color vars
-	protected $background_color;
+	protected $background_color = 'white';
 	protected $grid_color;
 	protected $bar_color;
 	protected $outline_color;
@@ -198,11 +206,24 @@ class PHPGraphLib {
 	protected $legend_swatch_outline_color;
 	protected $legend_titles = array();
 
-	public function __construct($width, $height, $output_file = null) 
+	// Variables created by Leonardo Panzardo to format the title of the graph
+	protected $title_font = '';
+	protected $title_font_size = 16;
+	protected $title_pixels_height = 16;
+
+	/**
+	 * Modified by Leonardo Panzardo to accept an array as parameter to be friendly with CodeIgniter library load functionality. The array must have the following two mandatory items
+	 * @param integer $width  - Width of the chart in pixels, recommended at least 200
+	 * @param integer $height - Heigth of the chart in pixels, recommended at least 225
+	 * The array may have also another optional value which is the output file name
+	 * @param string  $output_file - name of the file to output
+	 */
+	public function __construct($params) 
 	{
-		$this->width = $width;
-		$this->height = $height;
-		$this->output_file = $output_file;
+		if (intval($params['width'])) $this->width = $params['width'];
+		if (intval($params['height'])) $this->height = $params['height'];
+		$this->output_file = (isset($params['output_file'])) ? $output_file : null;
+		$this->title_pixels_height = round((intval($this->title_font_size) * 96) / 72);
 		$this->initialize();
 		$this->allocateColors();
 	}
@@ -214,8 +235,9 @@ class PHPGraphLib {
 			header("Content-type: image/png");
 		}
 
-		$this->image = @imagecreate($this->width, $this->height)
+		$this->image = @imagecreatetruecolor($this->width, $this->height)
 			or die("Cannot Initialize new GD image stream - Check your PHP setup");
+		imageantialias($this->image, true);
 	}
 
 	public function createGraph() 
@@ -269,6 +291,8 @@ class PHPGraphLib {
 
 		//display errors
 		$this->displayErrors();
+
+		imagefilter($this->image, IMG_FILTER_SMOOTH, 50);
 
 		//output to browser
 		if ($this->output_file) {
@@ -417,6 +441,7 @@ class PHPGraphLib {
 					$lineY1 = $y1;
 					if (isset($lineX2)) {
 						imageline($this->image, $lineX2, $lineY2, $lineX1, $lineY1, $this->line_color[$data_set_num]);
+						// imagelinethick($this->image, $lineX2, $lineY2, $lineX1, $lineY1, $this->line_color[$data_set_num], 4);
 						$lineX2 = $lineX1;
 						$lineY2 = $lineY1;
 					} else {
@@ -805,7 +830,8 @@ class PHPGraphLib {
 		//spacing may have changed since earlier
 		//use top margin or grid top y, whichever less
 		$highestElement = ($this->top_margin < $this->y_axis_y2) ? $this->top_margin : $this->y_axis_y2;
-		$textVertPos = ($highestElement / 2) - (self::TITLE_CHAR_HEIGHT / 2); //centered
+		$this->title_pixels_height = round(($this->title_font_size * 96) / 72);
+		$textVertPos = ($this->title_font!='') ? ($highestElement / 2) + ($this->title_pixels_height / 2) : $textVertPos = ($highestElement / 2) - (self::TITLE_CHAR_HEIGHT / 2);
 		$titleLength = strlen($this->title_text);
 		if ($this->bool_title_center) {
 			$title_x = ($this->width / 2) - (($titleLength * self::TITLE_CHAR_WIDTH) / 2);
@@ -814,27 +840,34 @@ class PHPGraphLib {
 			$title_x = $this->y_axis_x1;
 			$title_y = $textVertPos;
 		} elseif ($this->bool_title_right) {
-			$this->title_x = $this->x_axis_x2 - ($titleLength * self::TITLE_CHAR_WIDTH);
-			$this->title_y = $textVertPos;
+			$title_x = $this->x_axis_x2 - ($titleLength * self::TITLE_CHAR_WIDTH);
+			$title_y = $textVertPos;
 		}
-		imagestring($this->image, 2, $title_x , $title_y , $this->title_text,  $this->title_color);
+		// 
+		if ($this->title_font!='') {
+			imagettftext($this->image, $this->title_font_size, 0, $title_x, $title_y, $this->title_color, $this->title_font, $this->title_text);
+		} else {
+			imagestring($this->image, 5, $title_x , $title_y , $this->title_text,  $this->title_color);
+		}
 	}
 
 	protected function calcTopMargin() 
 	{
 		if ($this->bool_title) {
 			//include space for title, approx margin + 3*title height
-			$this->top_margin = ($this->height * (self::X_AXIS_MARGIN_PERCENT / 100)) + self::TITLE_CHAR_HEIGHT;
+			// $this->top_margin = ($this->height * (self::X_AXIS_MARGIN_PERCENT / 100)) + self::TITLE_CHAR_HEIGHT;
+			$this->top_margin = ($this->height * (self::TOP_MARGIN_PERCENT / 100)) + self::TITLE_CHAR_HEIGHT;
 		} else {
 			//just use default spacing
-			$this->top_margin = $this->height * (self::X_AXIS_MARGIN_PERCENT / 100);
+			$this->top_margin = $this->height * (self::TOP_MARGIN_PERCENT / 100);
 		}	
 	}
 
 	protected function calcRightMargin() 
 	{
 		//just use default spacing
-		$this->right_margin = $this->width * (self::Y_AXIS_MARGIN_PERCENT / 100);
+		// $this->right_margin = $this->width * (self::Y_AXIS_MARGIN_PERCENT / 100);
+		$this->right_margin = 2;
 	}
 
 	protected function calcCoords() 
@@ -928,7 +961,7 @@ class PHPGraphLib {
 			$errorColor = imagecolorallocate($this->image, 0, 0, 0);
 			$errorBackColor = imagecolorallocate($this->image, 255, 204, 0);
 			imagefilledrectangle($this->image, 0, 0, $this->width - 1, 2 * $lineHeight,  $errorBackColor);
-			imagestring($this->image, 3, 2, 0, "!!----- PHPGraphLib Error -----!!",  $errorColor);
+			imagestring($this->image, 3, 2, 0, "!!----- Chart Error -----!!",  $errorColor);
 			foreach($this->error as $key => $errorText) {
 				imagefilledrectangle($this->image, 0, ($key * $lineHeight) + $lineHeight, $this->width - 1, ($key * $lineHeight) + 2 * $lineHeight,  $errorBackColor);	
 				imagestring($this->image, 2, 2, ($key * $lineHeight) + $lineHeight, "[". ($key + 1) . "] ". $errorText,  $errorColor);	
@@ -1029,8 +1062,13 @@ class PHPGraphLib {
 			$percent = $percent / 100;
 			$this->x_axis_margin = round($this->height * $percent);
 		} else {
-			$percent = self::X_AXIS_MARGIN_PERCENT / 100;
-			$this->x_axis_margin = round($this->height * $percent);
+			if ($this->bool_x_axis_values) {
+				$percent = self::X_AXIS_MARGIN_PERCENT / 100;
+				$this->x_axis_margin = round($this->height * $percent);
+			} else { // if not showing the x axis values then set bottom margin to 1%
+				$percent = 1 / 100;
+				$this->x_axis_margin = round($this->height * $percent);
+			}
 		}	
 	}
 
@@ -1074,6 +1112,30 @@ class PHPGraphLib {
 		} else { 
 			$this->error[] = "String arg for setTitle() not specified properly."; 
 		}	
+	}
+
+	/**
+	 * Function added by Leonardo Panzardo to be able to use custom true type fonts on the chart title
+	 * @param string $fontfile - path to the ttf font file relative to the root application folder.
+	 * Do not use a forward slash at the beginning of the path.
+	 */
+	public function setTitleFont($fontfile)
+	{
+		if (!empty($fontfile)) {
+			$this->title_font = $fontfile;
+		}
+	}
+
+	/**
+	 * Added by Leonardo Panzardo
+	 * @param integer $fontsize - sets the title true type font size in points
+	 */
+	public function setTitleFontSize($fontsize)
+	{
+		if (!empty($fontsize) && intval($fontsize) > 0) {
+			$this->title_font_size = intval($fontsize);
+			$this->title_pixels_height = round(($this->title_font_size * 96) / 72);
+		}
 	}
 
 	public function setTitleLocation($location) 
