@@ -1,6 +1,6 @@
 # CIGraphLib Graphing Library
 
-### CIGraphLib is a lightweight PHP graphing library based on the open source PHPGraphLib project that creates slick PHP graphs for usage in your CodeIgniter framework based application.
+### CIGraphLib is a lightweight PHP graphing library based on the open source PHPGraphLib project that creates slick graphs for usage in your CodeIgniter framework based application.
 
 Since CodeIgniter framework doesn't come with a graphing library included, I decided to adopt one and fork it to make if fully CodeIgniter compatible. The reasons because I choosed PHPGraphLib as a base for my project are three:
 
