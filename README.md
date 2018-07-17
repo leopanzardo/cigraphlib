@@ -1,29 +1,38 @@
-# PHPGraphLib Graphing Library
+# CIGraphLib Graphing Library
 
-### PHPGraphLib is a lightweight PHP-based graphing library that creates slick PHP graphs for incorporation into a website or application.
+### CIGraphLib is a lightweight PHP graphing library based on the open source PHPGraphLib project that creates slick PHP graphs for usage in your CodeIgniter framework based application.
 
-PHPGraphLib has powerful customization features, allowing you to generate the perfect bar, line, stacked bar, or pie graph for any application. Used with dynamic data, PHPGraphLib allows easy visual interpretation of sophisticated data sets. Simply feed PHPGraphLib an array of data points, and it will generate a .png chart of your data dynamically for browser display or saved to your filesystem.
+Since CodeIgniter framework doesn't come with a graphing library included, I decided to adopt one and fork it to make if fully CodeIgniter compatible. The reasons because I choosed PHPGraphLib as a base for my project are three:
+
+1. It's simple. It's programmed in a very clear and simple way, without being bloat by unnecesary functionality.
+2. It's lightweight. Even though it uses the GD library it is very fast to be an image generation library.
+3. It's very easy to adapt and integrate into CodeIgniter which is my favorite PHP framework.
+
+As it parent, CIGraphLib has some powerful customization features, allowing you to generate the bar, line, stacked bar, or pie graphs for any application based on CodeIgniter, but as an added bonus you can also customize all the fonts used in the graphs. Used with dynamic data, allows easy visual interpretation of sophisticated data sets. Simply feed CIGraphLib an array of data points, and it will generate a .png chart of your data dynamically for browser display or saved to your filesystem.
 
 ### History
 
-The first version PHPGraphLib was written in 2007 by Elliott Brueggeman to deliver PHP generated graphs quickly and easily to PHP4 applications. It has grown in both features and maturity since its inception. PHPGraphLib now requires PHP5+. Originally available only for paid commercial use, PHPGraphLib was open-sourced in 2013 under the MIT License. Please visit [http://www.ebrueggeman.com/phpgraphlib](http://www.ebrueggeman.com/phpgraphlib) for more information.
+In this first version of CIGraphLib I have included functionality to customize only the graph title font family and size, but I'm currently working on adding font customization for all the text on the graph so you can use ttf fonts anywhere in your chart.
+This has been tested on PHP versions 5.6.18 and 7.0.3, which are the versions I have on my WAMP powered local development machine, but having GD enabled in PHP it should work in other versions of PHP too, feel free to give it a test and report any bug you find on it.
 
 ### Documentation
 
-Documentation is available at [http://www.ebrueggeman.com/phpgraphlib](http://www.ebrueggeman.com/phpgraphlib)
+Documentation is a work in progress yet but it will be available soon. In the meantime you can use the PHPGraphLib documentation as a starting point which is available at [http://www.ebrueggeman.com/phpgraphlib](http://www.ebrueggeman.com/phpgraphlib) and see the following added features.
 
-<a href="http://www.ebrueggeman.com/phpgraphlib">http://www.ebrueggeman.com/phpgraphlib</a>. I'll begin porting over documentation soon where it makes sense.
+### Added features
 
-### Examples
+#### setTitleFont (string $fontfile)
 
-Within the [Examples](/examples) directory are examples of PHPGraphLib usage. Git clone this repo to a directory on your localhost or server to see these examples in action.
+Uses the ttf file specified in $fontfile to format the graph title. You can place the ttf file in any folder you like but remember to reference it related to the root of your CodeIgniter folder. For example: if you have a font file named Roboto-Regular.ttf inside a fonts folder at the root of your project you should use this function inside your CodeIgniter code like this:
 
-![PHPGraphLib Graph Example](http://www.ebrueggeman.com/sites/www.ebrueggeman.com/files/images/phpgraphlib_example_graph.png)
+$this->load->library('Cigraphlib');
+$this->cigraphlib->setTitleFont('fonts/Roboto-Regular.ttf');
 
-![Graph Example](http://www.ebrueggeman.com/sites/www.ebrueggeman.com/files/images/alaska_temp_graph.png)
+#### setTitleFontSize (integer $fontsize)
 
-![Two Dataset Example](http://www.ebrueggeman.com/sites/www.ebrueggeman.com/files/images/company_production_graph.png)
+Size in points of the ttf font used to format the graph title. The library automatically calculates the size in pixels used by it to fit it into the graph. It's set to 16 points by default. In case you want to set it to 20 points and continuing with the previous example code you just need to add the following line of code:
 
-![Pie Chart Example](http://www.ebrueggeman.com/sites/www.ebrueggeman.com/files/images/example_graph_6_pie.png)
+$this->cigraphlib->setTitleFontSize(20);
 
-![Stacked Graph Example](http://www.ebrueggeman.com/sites/www.ebrueggeman.com/files/images/stacked-graph-example-2.png)
+I will be adding more features to this library so keep updated!
+
